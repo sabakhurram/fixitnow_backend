@@ -49,3 +49,6 @@ Thumbs.db
 
 # Optional package manager files
 .pnpm-store/
+
+# Firebase Service Account File
+firebase-service-account.json
