@@ -24,7 +24,12 @@ app.use(express.json());
 
 // Bind modular routes
 app.use('/api/users', userRoutes);
-
+const inspectionRoutes = require('./src/routes/inspectionRoutes');
+app.use('/api/inspections', inspectionRoutes);
+const repairRoutes = require('./src/routes/repairRoutes');
+app.use('/api/repairs', repairRoutes);
+const amcRoutes = require('./src/routes/amcRoutes');
+app.use('/api/amc', amcRoutes);
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date() });
