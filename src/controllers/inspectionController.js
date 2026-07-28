@@ -11,7 +11,6 @@ const createInspection = async (req, res) => {
       property_type,
       roof_type,
       roof_access,
-      electricity_bill_url,
       electricity_provider,
       preferred_date,
       preferred_time,
@@ -19,7 +18,7 @@ const createInspection = async (req, res) => {
       info_confirmed,
       terms_agreed
     } = req.body;
-
+const electricityBillUrl = req.file ? req.file.path : null;
     if (!full_name || !phone || !email || !property_type || !roof_type ||
         !roof_access || !preferred_date || !preferred_time) {
       return res.status(400).json({
@@ -45,7 +44,7 @@ const createInspection = async (req, res) => {
         property_type,
         roof_type,
         roof_access,
-        electricity_bill_url,
+        electricity_bill_url: electricityBillUrl,
         electricity_provider,
         preferred_date,
         preferred_time,
@@ -78,5 +77,47 @@ const createInspection = async (req, res) => {
     });
   }
 };
+const getInspections = async(req,res)=>{
 
-module.exports = { createInspection };
+try{
+
+const userId = req.user.uid;
+
+
+const {data,error}=await supabase
+.from("inspections")
+.select("*")
+.eq("user_id",userId)
+.order("created_at",{ascending:false});
+
+
+if(error){
+ return res.status(500).json({
+  success:false,
+  message:error.message
+ });
+}
+
+
+res.status(200).json({
+ success:true,
+ data
+});
+
+
+}
+catch(error){
+
+res.status(500).json({
+ success:false,
+ message:error.message
+});
+
+}
+
+};
+
+module.exports={
+ createInspection,
+ getInspections
+}

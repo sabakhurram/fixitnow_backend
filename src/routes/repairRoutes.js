@@ -1,10 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const { verifyFirebaseToken } = require('../middleware/auth');
-const { createRepair } = require('../controllers/repairController');
+const {
+ createRepair,
+ getRepairs
+}=require("../controllers/repairController");
 
 router.use(verifyFirebaseToken);
-
-router.post('/', createRepair);
-
+const upload = require("../middleware/cloudinaryUpload");
+router.post(
+    "/",
+    upload.fields([
+        {
+            name:"images",
+            maxCount:5
+        },
+        {
+            name:"video",
+            maxCount:1
+        }
+    ]),
+    createRepair
+);
+router.get(
+ "/",
+ verifyFirebaseToken,
+ getRepairs
+);
 module.exports = router;

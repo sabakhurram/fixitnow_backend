@@ -15,7 +15,6 @@ const createAmcContract = async (req, res) => {
       contract_start_date,
       service_address,
       city,
-      map_location,
       preferred_day,
       preferred_time,
       additional_notes,
@@ -55,7 +54,6 @@ const createAmcContract = async (req, res) => {
         contract_start_date,
         service_address,
         city,
-        map_location: map_location || null,
         preferred_day,
         preferred_time,
         additional_notes,
@@ -88,5 +86,48 @@ const createAmcContract = async (req, res) => {
     });
   }
 };
+const getAMCs = async(req,res)=>{
 
-module.exports = { createAmcContract };
+try{
+
+const userId = req.user.uid;
+
+
+const {data,error}=await supabase
+.from("amc_contracts")
+.select("*")
+.eq("user_id",userId)
+.order("created_at",{ascending:false});
+
+
+if(error){
+
+return res.status(500).json({
+ success:false,
+ message:error.message
+});
+
+}
+
+
+return res.status(200).json({
+ success:true,
+ data
+});
+
+
+}
+catch(error){
+
+return res.status(500).json({
+ success:false,
+ message:error.message
+});
+
+}
+
+};
+module.exports={
+ createAmcContract,
+ getAMCs
+}
