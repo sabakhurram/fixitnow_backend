@@ -56,7 +56,51 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const checkAdminStatus = async (req, res) => {
+  try {
+
+    const uid = req.user.uid;
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", uid)
+      .single();
+
+console.log("Firebase UID:", uid);
+console.log("Database user:", data);
+    if (error) {
+      return res.status(500).json({
+        message: error.message
+      });
+    }
+
+
+    if (data.role === "admin") {
+
+      return res.json({
+        isAdmin: true
+      });
+
+    }
+
+
+    return res.json({
+      isAdmin: false
+    });
+
+
+  } catch(error) {
+
+    return res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
 module.exports = {
   syncUser,
-  getUserProfile
+  getUserProfile,
+  checkAdminStatus
 };
