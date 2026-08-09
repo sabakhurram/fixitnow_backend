@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { verifyFirebaseToken } = require('../middleware/auth');
+const { verifyFirebaseToken,  verifyAdmin } = require('../middleware/auth');
 
 const { 
   syncUser, 
   getUserProfile,
-  checkAdminStatus
+  checkAdminStatus,
+getAllCustomers
 } = require('../controllers/userController');
 
 
@@ -24,6 +25,8 @@ router.get('/profile', getUserProfile);
 
 // GET /api/users/admin-check
 router.get('/admin-check', checkAdminStatus);
+
+router.get('/customers', verifyAdmin, getAllCustomers);
 
 
 module.exports = router;

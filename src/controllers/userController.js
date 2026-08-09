@@ -98,9 +98,42 @@ console.log("Database user:", data);
 
   }
 };
+const getAllCustomers = async (req, res) => {
+    try {
+
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('role', 'user')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('getAllCustomers database error:', error);
+
+            return res.status(500).json({
+                error: 'Failed to fetch customers',
+                details: error.message
+            });
+        }
+
+        return res.status(200).json({
+            customers: data
+        });
+
+    } catch (err) {
+
+        console.error('getAllCustomers controller error:', err);
+
+        return res.status(500).json({
+            error: 'Internal server error while fetching customers'
+        });
+
+    }
+};
 
 module.exports = {
   syncUser,
   getUserProfile,
-  checkAdminStatus
+  checkAdminStatus,
+  getAllCustomers
 };
