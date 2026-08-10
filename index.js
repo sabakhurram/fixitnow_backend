@@ -30,6 +30,8 @@ const repairRoutes = require('./src/routes/repairRoutes');
 app.use('/api/repairs', repairRoutes);
 const amcRoutes = require('./src/routes/amcRoutes');
 app.use('/api/amc', amcRoutes);
+const productRoutes = require('./src/routes/productRoutes');
+app.use('/api/products', productRoutes);
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date() });
