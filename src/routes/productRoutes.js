@@ -4,7 +4,9 @@ const router = express.Router();
 const {
     getProducts,
     getPublicProducts,
-    createProduct
+    createProduct,
+        updateProduct,
+        deleteProduct
 } = require("../controllers/productController");
 
 const {
@@ -35,5 +37,21 @@ router.post(
     createProduct
 );
 
+// Update product
+router.put(
+    "/:id",
+    verifyFirebaseToken,
+    verifyAdmin,
+    updateProduct
+    
+);
+// Delete product
+
+router.delete(
+    "/:id",
+    verifyFirebaseToken,
+    verifyAdmin,
+    deleteProduct
+);
 
 module.exports = router;
