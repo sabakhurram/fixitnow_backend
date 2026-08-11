@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { verifyFirebaseToken } = require('../middleware/auth');
-const { 
-  createInspection,
-  getInspections
+const {
+    verifyFirebaseToken,
+    verifyAdmin
+} = require('../middleware/auth');
+const {
+    createInspection,
+    getInspections,
+    getAllInspections
 } = require('../controllers/inspectionController');
 
 // All inspection routes require a verified Firebase Auth token
@@ -29,5 +33,10 @@ router.get(
  "/",
  verifyFirebaseToken,
  getInspections
+);
+router.get(
+    "/admin",
+    verifyAdmin,
+    getAllInspections
 );
 module.exports = router;

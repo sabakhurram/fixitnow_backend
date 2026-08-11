@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { verifyFirebaseToken } = require('../middleware/auth');
 const {
- createRepair,
- getRepairs
-}=require("../controllers/repairController");
+    verifyFirebaseToken,
+    verifyAdmin
+} = require('../middleware/auth');
+const {
+    createRepair,
+    getRepairs,
+    getAllRepairs
+} = require('../controllers/repairController');
 
 router.use(verifyFirebaseToken);
 const upload = require("../middleware/cloudinaryUpload");
@@ -26,5 +30,10 @@ router.get(
  "/",
  verifyFirebaseToken,
  getRepairs
+);
+router.get(
+    "/admin",
+    verifyAdmin,
+    getAllRepairs
 );
 module.exports = router;

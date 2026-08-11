@@ -127,7 +127,47 @@ return res.status(500).json({
 }
 
 };
+const getAllAMCContracts = async (req, res) => {
+    try {
+
+        const { data, error } = await supabase
+            .from("amc_contracts")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+
+            console.error(
+                "Supabase getAllAMCContracts error:",
+                error.message
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: "Failed to fetch AMC requests"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+
+    } catch (error) {
+
+        console.error(
+            "getAllAMCContracts controller error:",
+            error.message
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
 module.exports={
  createAmcContract,
- getAMCs
+ getAMCs,
+    getAllAMCContracts
 }

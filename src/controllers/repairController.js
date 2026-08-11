@@ -161,8 +161,47 @@ const getRepairs = async (req,res)=>{
   }
 
 };
+const getAllRepairs = async (req, res) => {
+    try {
 
+        const { data, error } = await supabase
+            .from("repairs")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+
+            console.error(
+                "Supabase getAllRepairs error:",
+                error.message
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: "Failed to fetch repair requests"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+
+    } catch (error) {
+
+        console.error(
+            "getAllRepairs controller error:",
+            error.message
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
 module.exports = {
  createRepair,
- getRepairs
+ getRepairs,
+ getAllRepairs
 };

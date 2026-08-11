@@ -116,8 +116,48 @@ res.status(500).json({
 }
 
 };
+const getAllInspections = async (req, res) => {
+    try {
 
+        const { data, error } = await supabase
+            .from("inspections")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+
+            console.error(
+                "Supabase getAllInspections error:",
+                error.message
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: "Failed to fetch inspection requests"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+
+    } catch (error) {
+
+        console.error(
+            "getAllInspections controller error:",
+            error.message
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
 module.exports={
  createInspection,
- getInspections
+ getInspections,
+     getAllInspections
+
 }
