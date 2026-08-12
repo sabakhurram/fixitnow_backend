@@ -32,6 +32,9 @@ const amcRoutes = require('./src/routes/amcRoutes');
 app.use('/api/amc', amcRoutes);
 const productRoutes = require('./src/routes/productRoutes');
 app.use('/api/products', productRoutes);
+const overviewRoutes = require("./src/routes/overviewRoutes");
+app.use("/api/overview", overviewRoutes);
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date() });
