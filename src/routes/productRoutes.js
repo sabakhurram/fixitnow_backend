@@ -4,6 +4,7 @@ const router = express.Router();
 const {
     getProducts,
     getPublicProducts,
+     getPublicProductById,
     createProduct,
         updateProduct,
         deleteProduct
@@ -20,7 +21,10 @@ router.get(
     "/public",
     getPublicProducts
 );
-
+router.get(
+    "/public/:id",
+    getPublicProductById
+);
 
 // Admin products
 router.get(

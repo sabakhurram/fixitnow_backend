@@ -75,6 +75,55 @@ const getPublicProducts = async (req, res) => {
         });
     }
 };
+const getPublicProductById = async (req, res) => {
+    try {
+
+        const { id } = req.params;
+
+        const { data, error } = await supabase
+            .from("products")
+            .select(
+                "id, name, category, price, stock, image, description"
+            )
+            .eq("id", id)
+            .single();
+
+        if (error) {
+
+            console.error(
+                "Get public product database error:",
+                error
+            );
+
+            return res.status(500).json({
+                error: "Failed to fetch product"
+            });
+        }
+
+        if (!data) {
+
+            return res.status(404).json({
+                error: "Product not found"
+            });
+
+        }
+
+        return res.status(200).json({
+            product: data
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Get public product controller error:",
+            error
+        );
+
+        return res.status(500).json({
+            error: "Internal server error"
+        });
+    }
+};
 const createProduct = async (req, res) => {
     try {
 
@@ -294,10 +343,13 @@ const deleteProduct = async (req, res) => {
 
     }
 };
+
 module.exports = {
     getProducts,
     getPublicProducts,
+     getPublicProductById,
     createProduct,
     updateProduct,
         deleteProduct
+
 };
