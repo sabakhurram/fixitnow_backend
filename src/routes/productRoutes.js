@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 
@@ -14,7 +15,7 @@ const {
     verifyFirebaseToken,
     verifyAdmin
 } = require("../middleware/auth");
-
+const upload = require("../middleware/cloudinaryUpload");
 
 // Public products
 router.get(
@@ -38,6 +39,7 @@ router.post(
     "/",
     verifyFirebaseToken,
     verifyAdmin,
+    upload.single("image"),
     createProduct
 );
 

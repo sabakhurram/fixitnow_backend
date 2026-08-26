@@ -132,11 +132,10 @@ const createProduct = async (req, res) => {
             category,
             price,
             stock,
-            image,
             description
         } = req.body;
 
-
+const image = req.file ? req.file.path : null;
         // Basic validation
 
         if (
