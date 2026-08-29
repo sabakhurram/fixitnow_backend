@@ -134,6 +134,71 @@ const getAdminOrders = async (req, res) => {
         return res.status(500).json({ error: "Internal server error fetching admin orders." });
     }
 };
+// Admin: Get sales summary for dashboard
+const getSalesSummary = async (req, res) => {
+    try {
+        const { data: orders, error } = await supabase
+            .from("orders")
+            .select("total_amount, status, created_at")
+            .neq("status", "Cancelled")
+            .order("created_at", { ascending: true });
+
+        if (error) {
+            console.error("Supabase getSalesSummary database error:", error);
+
+            return res.status(500).json({
+                error: "Database error fetching sales summary."
+            });
+        }
+
+        const monthlySales = {};
+
+        orders.forEach((order) => {
+            const date = new Date(order.created_at);
+
+            const month = date.toLocaleString("en-US", {
+                month: "short"
+            });
+
+            const year = date.getFullYear();
+
+            const key = `${year}-${date.getMonth()}`;
+
+            if (!monthlySales[key]) {
+                monthlySales[key] = {
+                    month,
+                    year,
+                    sales: 0
+                };
+            }
+
+            monthlySales[key].sales += Number(order.total_amount) || 0;
+        });
+
+        const salesData = Object.values(monthlySales).map((item) => ({
+            month: item.month,
+            sales: item.sales
+        }));
+
+        const totalSales = orders.reduce(
+            (total, order) =>
+                total + (Number(order.total_amount) || 0),
+            0
+        );
+
+        return res.status(200).json({
+            totalSales,
+            salesData
+        });
+
+    } catch (error) {
+        console.error("getSalesSummary controller error:", error);
+
+        return res.status(500).json({
+            error: "Internal server error fetching sales summary."
+        });
+    }
+};
 
 // Admin: Update order status
 const updateOrderStatus = async (req, res) => {
@@ -172,5 +237,6 @@ module.exports = {
     createOrder,
     getUserOrders,
     getAdminOrders,
+       getSalesSummary,
     updateOrderStatus
 };

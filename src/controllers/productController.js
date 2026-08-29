@@ -209,9 +209,8 @@ const updateProduct = async (req, res) => {
             category,
             price,
             stock,
-            image,
             description
-        } = req.body;
+        } = req.body || {};
 
 
         // Basic validation
@@ -228,6 +227,40 @@ const updateProduct = async (req, res) => {
         }
 
 
+        // Get existing product
+
+        const {
+            data: existingProduct,
+            error: fetchError
+        } = await supabase
+            .from("products")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+
+        if (fetchError || !existingProduct) {
+
+            console.error(
+                "Supabase fetch product error:",
+                fetchError
+            );
+
+            return res.status(404).json({
+                error: "Product not found"
+            });
+        }
+
+
+        // Keep the current image unless a new one is uploaded
+
+        const image = req.file
+            ? req.file.path
+            : existingProduct.image;
+
+
+        // Update product
+
         const { data, error } = await supabase
             .from("products")
             .update({
@@ -235,7 +268,7 @@ const updateProduct = async (req, res) => {
                 category,
                 price: Number(price),
                 stock: Number(stock),
-                image: image || null,
+                image,
                 description: description || null,
                 updated_at: new Date().toISOString()
             })
@@ -255,15 +288,6 @@ const updateProduct = async (req, res) => {
                 error: "Failed to update product",
                 details: error.message
             });
-        }
-
-
-        if (!data) {
-
-            return res.status(404).json({
-                error: "Product not found"
-            });
-
         }
 
 

@@ -357,7 +357,9 @@ const getOverview = async (req, res) => {
             recentCustomersResult,
             recentInspectionsResult,
             recentRepairsResult,
-            recentAmcResult
+            recentAmcResult,
+             recentOrdersResult
+
         ] = await Promise.all([
 
             supabase
@@ -399,7 +401,17 @@ const getOverview = async (req, res) => {
                 .order("created_at", {
                     ascending: false
                 })
-                .limit(5)
+                .limit(5),
+                supabase
+    .from("orders")
+    .select(
+        "id, shipping_name, total_amount, created_at, status"
+    )
+    .order("created_at", {
+        ascending: false
+    })
+    .limit(5)
+                
 
         ]);
 
@@ -408,7 +420,9 @@ const getOverview = async (req, res) => {
             recentCustomersResult.error ||
             recentInspectionsResult.error ||
             recentRepairsResult.error ||
-            recentAmcResult.error
+            recentAmcResult.error ||
+             recentOrdersResult.error ||
+             recentOrdersResult.error
         ) {
 
             console.error(
@@ -503,7 +517,23 @@ const getOverview = async (req, res) => {
             }
         );
 
+/*
+Order activities
+*/
 
+recentOrdersResult.data.forEach(
+    (order) => {
+
+        activities.push({
+            type: "order",
+            title: "New order received",
+            description:
+                `${order.shipping_name || "A customer"} placed an order for Rs. ${Number(order.total_amount || 0).toLocaleString()}`,
+            created_at: order.created_at
+        });
+
+    }
+);
         /*
         Sort everything by newest activity
         */

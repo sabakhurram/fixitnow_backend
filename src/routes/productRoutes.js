@@ -48,6 +48,7 @@ router.put(
     "/:id",
     verifyFirebaseToken,
     verifyAdmin,
+       upload.single("image"),
     updateProduct
     
 );
