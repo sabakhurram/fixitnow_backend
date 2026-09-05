@@ -200,8 +200,49 @@ const getAllRepairs = async (req, res) => {
         });
     }
 };
+const updateRepairStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: "Status is required"
+            });
+        }
+
+        const dbStatus = String(status).toLowerCase().trim().replace(/\s+/g, '_');
+
+        const { data, error } = await supabase
+            .from("repairs")
+            .update({ status: dbStatus })
+            .eq("id", id)
+            .select()
+            .single();
+
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
 module.exports = {
  createRepair,
  getRepairs,
- getAllRepairs
+ getAllRepairs,
+ updateRepairStatus
 };

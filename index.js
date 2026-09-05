@@ -38,6 +38,8 @@ const overviewRoutes = require("./src/routes/overviewRoutes");
 app.use("/api/overview", overviewRoutes);
 const cartRoutes = require("./src/routes/cartRoutes");
 app.use("/api/cart", cartRoutes);
+const reviewRoutes = require("./src/routes/reviewRoutes");
+app.use("/api/reviews", reviewRoutes);
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date() });

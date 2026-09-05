@@ -131,9 +131,61 @@ const getAllCustomers = async (req, res) => {
     }
 };
 
+const getCustomerActivityDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data: user } = await supabase.from('users').select('*').eq('id', id).single();
+    const userEmail = user?.email || "";
+
+    let [repairsRes, inspectionsRes, amcRes, ordersRes] = await Promise.all([
+      supabase.from('repairs').select('*').eq('user_id', id),
+      supabase.from('inspections').select('*').eq('user_id', id),
+      supabase.from('amc_contracts').select('*').eq('user_id', id),
+      supabase.from('orders').select('*').eq('user_id', id)
+    ]);
+
+    let repairs = repairsRes.data || [];
+    let inspections = inspectionsRes.data || [];
+    let amc = amcRes.data || [];
+    let orders = ordersRes.data || [];
+
+    if (userEmail) {
+      if (repairs.length === 0) {
+        const { data } = await supabase.from('repairs').select('*').eq('email', userEmail);
+        if (data && data.length > 0) repairs = data;
+      }
+      if (inspections.length === 0) {
+        const { data } = await supabase.from('inspections').select('*').eq('email', userEmail);
+        if (data && data.length > 0) inspections = data;
+      }
+      if (amc.length === 0) {
+        const { data } = await supabase.from('amc_contracts').select('*').eq('email', userEmail);
+        if (data && data.length > 0) amc = data;
+      }
+      if (orders.length === 0) {
+        const { data } = await supabase.from('orders').select('*').eq('email', userEmail);
+        if (data && data.length > 0) orders = data;
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      repairs,
+      inspections,
+      amc,
+      orders
+    });
+  } catch (err) {
+    console.error("getCustomerActivityDetails error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   syncUser,
   getUserProfile,
   checkAdminStatus,
-  getAllCustomers
+  getAllCustomers,
+  getCustomerActivityDetails
 };

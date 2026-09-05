@@ -4,7 +4,7 @@ const {
     verifyFirebaseToken,
     verifyAdmin
 } = require('../middleware/auth');
-const { createAmcContract, getAMCs,    getAllAMCContracts } = require('../controllers/amcController');
+const { createAmcContract, getAMCs, getAllAMCContracts, updateAMCStatus } = require('../controllers/amcController');
 router.use(verifyFirebaseToken);
 
 router.post('/', createAmcContract);
@@ -17,5 +17,10 @@ router.get(
     "/admin",
     verifyAdmin,
     getAllAMCContracts
+);
+router.put(
+    "/admin/:id/status",
+    verifyAdmin,
+    updateAMCStatus
 );
 module.exports = router;

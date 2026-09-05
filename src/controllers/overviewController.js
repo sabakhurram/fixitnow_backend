@@ -2,21 +2,25 @@ const supabase = require("../config/supabase");
 
 const getOverview = async (req, res) => {
     try {
+        const range = req.query.range || "Last 30 Days";
+        let startDate = null;
+        const now = new Date();
 
-        /*
-        ============================================
-        1. TOTAL CUSTOMERS
-        ============================================
-        */
+        if (range === "Last 7 Days") {
+            startDate = new Date(new Date().setDate(now.getDate() - 7));
+        } else if (range === "Last 30 Days") {
+            startDate = new Date(new Date().setDate(now.getDate() - 30));
+        } else if (range === "Last 3 Months" || range === "Last 90 Days") {
+            startDate = new Date(new Date().setMonth(now.getMonth() - 3));
+        } else if (range === "Last 6 Months") {
+            startDate = new Date(new Date().setMonth(now.getMonth() - 6));
+        } else if (range === "This Year") {
+            startDate = new Date(new Date().getFullYear(), 0, 1);
+        }
 
-        const { count: customerCount, error: customerError } =
-            await supabase
-                .from("users")
-                .select("id", {
-                    count: "exact",
-                    head: true
-                })
-                .eq("role", "user");
+        let customerQuery = supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "user");
+        if (startDate) customerQuery = customerQuery.gte("created_at", startDate.toISOString());
+        const { count: customerCount, error: customerError } = await customerQuery;
 
 
         if (customerError) {

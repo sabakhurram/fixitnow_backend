@@ -7,7 +7,8 @@ const {
 const {
     createInspection,
     getInspections,
-    getAllInspections
+    getAllInspections,
+    updateInspectionStatus
 } = require('../controllers/inspectionController');
 
 // All inspection routes require a verified Firebase Auth token
@@ -38,5 +39,10 @@ router.get(
     "/admin",
     verifyAdmin,
     getAllInspections
+);
+router.put(
+    "/admin/:id/status",
+    verifyAdmin,
+    updateInspectionStatus
 );
 module.exports = router;

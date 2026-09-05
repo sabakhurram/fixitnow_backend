@@ -7,7 +7,8 @@ const {
 const {
     createRepair,
     getRepairs,
-    getAllRepairs
+    getAllRepairs,
+    updateRepairStatus
 } = require('../controllers/repairController');
 
 router.use(verifyFirebaseToken);
@@ -35,5 +36,10 @@ router.get(
     "/admin",
     verifyAdmin,
     getAllRepairs
+);
+router.put(
+    "/admin/:id/status",
+    verifyAdmin,
+    updateRepairStatus
 );
 module.exports = router;

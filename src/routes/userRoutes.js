@@ -7,7 +7,8 @@ const {
   syncUser, 
   getUserProfile,
   checkAdminStatus,
-getAllCustomers
+  getAllCustomers,
+  getCustomerActivityDetails
 } = require('../controllers/userController');
 
 
@@ -27,6 +28,7 @@ router.get('/profile', getUserProfile);
 router.get('/admin-check', checkAdminStatus);
 
 router.get('/customers', verifyAdmin, getAllCustomers);
+router.get('/customers/:id/details', verifyAdmin, getCustomerActivityDetails);
 
 
 module.exports = router;
