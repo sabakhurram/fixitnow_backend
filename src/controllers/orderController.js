@@ -1,5 +1,5 @@
 const supabase = require("../config/supabase");
-
+const { sendOrderConfirmationEmail } = require("../services/emailService");
 // Place a new product order
 const createOrder = async (req, res) => {
     try {
@@ -71,18 +71,39 @@ const createOrder = async (req, res) => {
             .select()
             .single();
 
-        if (orderErr) {
-            console.error("Supabase createOrder database error:", orderErr);
-            return res.status(500).json({
-                error: "Failed to save order in the database.",
-                details: orderErr.message
-            });
-        }
+      if (orderErr) {
+    console.error("Supabase createOrder database error:", orderErr);
+    return res.status(500).json({
+        error: "Failed to save order in the database.",
+        details: orderErr.message
+    });
+}
 
-        return res.status(201).json({
-            message: "Order placed successfully.",
-            order
-        });
+// Send order confirmation email
+try {
+    await sendOrderConfirmationEmail({
+        email: order.email,
+        name: order.shipping_name,
+        orderId: order.id,
+        items: order.items,
+        totalAmount: order.total_amount,
+        paymentMethod: order.payment_method,
+        shippingAddress: order.shipping_address,
+    });
+
+    console.log("Order confirmation email sent to:", order.email);
+} catch (emailError) {
+    // Email failure should not cancel the successful order
+    console.error(
+        "Order confirmation email failed:",
+        emailError.message
+    );
+}
+
+return res.status(201).json({
+    message: "Order placed successfully.",
+    order
+});
 
     } catch (error) {
         console.error("createOrder controller error:", error);
