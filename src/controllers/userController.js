@@ -1,32 +1,80 @@
 const supabase = require('../config/supabase');
-
+const { sendWelcomeEmail } = require('../services/emailService');
 const syncUser = async (req, res) => {
   const { uid, email, name } = req.user;
 
   try {
+    // Check if the user already exists
+    const { data: existingUser, error: findError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', uid)
+      .maybeSingle();
+
+    if (findError) {
+      console.error('Supabase user lookup error:', findError);
+
+      return res.status(500).json({
+        error: 'Database lookup failure',
+        details: findError.message
+      });
+    }
+
+    // Existing user → don't create again and don't send welcome email
+    if (existingUser) {
+      return res.status(200).json({
+        message: 'User already exists',
+        user: existingUser
+      });
+    }
+
+    // New user → create account
     const { data, error } = await supabase
       .from('users')
-      .upsert({
+      .insert({
         id: uid,
         email: email,
-        display_name: name || null,
-        updated_at: new Date()
+        display_name: name || null
       })
       .select()
       .single();
 
     if (error) {
       console.error('Supabase syncUser database error:', error);
-      return res.status(500).json({ error: 'Database sync failure', details: error.message });
+
+      return res.status(500).json({
+        error: 'Database sync failure',
+        details: error.message
+      });
     }
 
-    return res.status(200).json({
-      message: 'User synced successfully',
+    // Send welcome email only for a newly created user
+    try {
+      await sendWelcomeEmail({
+        email: data.email,
+        name: data.display_name
+      });
+
+      console.log('Welcome email sent to:', data.email);
+    } catch (emailError) {
+      // Email failure should not prevent account creation
+      console.error(
+        'Welcome email failed:',
+        emailError.message
+      );
+    }
+
+    return res.status(201).json({
+      message: 'User created and synced successfully',
       user: data
     });
+
   } catch (err) {
     console.error('syncUser controller error:', err);
-    return res.status(500).json({ error: 'Internal server error during sync' });
+
+    return res.status(500).json({
+      error: 'Internal server error during sync'
+    });
   }
 };
 
