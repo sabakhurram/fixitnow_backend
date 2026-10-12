@@ -1,4 +1,6 @@
 const supabase = require('../config/supabase');
+const admin = require('../config/firebase');
+const { getAuth } = require('firebase-admin/auth');
 const { sendWelcomeEmail } = require('../services/emailService');
 const syncUser = async (req, res) => {
   const { uid, email, name } = req.user;
@@ -178,7 +180,133 @@ const getAllCustomers = async (req, res) => {
 
     }
 };
+const getAllTechnicians = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, email, display_name, role, created_at')
+      .eq('role', 'technician')
+      .order('created_at', { ascending: false });
 
+    if (error) {
+      console.error('getAllTechnicians database error:', error);
+
+      return res.status(500).json({
+        error: 'Failed to fetch technicians',
+        details: error.message
+      });
+    }
+
+    return res.status(200).json({
+      technicians: data
+    });
+
+  } catch (err) {
+    console.error('getAllTechnicians controller error:', err);
+
+    return res.status(500).json({
+      error: 'Internal server error while fetching technicians'
+    });
+  }
+};
+const createTechnician = async (req, res) => {
+  try {
+    const { email, password, display_name } = req.body;
+
+    // Validate required fields
+    if (!email || !password || !display_name) {
+      return res.status(400).json({
+        error: 'Email, password, and display name are required'
+      });
+    }
+
+    // Create Firebase authentication account
+   const firebaseUser = await getAuth().createUser({
+      email,
+      password,
+      displayName: display_name
+    });
+
+    // Create corresponding Supabase user record
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        id: firebaseUser.uid,
+        email: email,
+        display_name: display_name,
+        role: 'technician'
+      })
+      .select('id, email, display_name, role, created_at')
+      .single();
+
+    if (error) {
+      console.error('Technician database insert error:', error);
+
+      // Roll back Firebase account if Supabase insert fails
+      try {
+     await getAuth().deleteUser(firebaseUser.uid);
+      } catch (deleteError) {
+        console.error(
+          'Failed to rollback Firebase technician account:',
+          deleteError.message
+        );
+      }
+
+      return res.status(500).json({
+        error: 'Failed to create technician profile',
+        details: error.message
+      });
+    }
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail({
+        email: data.email,
+        name: data.display_name
+      });
+
+      console.log('Technician welcome email sent to:', data.email);
+
+    } catch (emailError) {
+      // Email failure should not undo account creation
+      console.error(
+        'Technician welcome email failed:',
+        emailError.message
+      );
+    }
+
+    return res.status(201).json({
+      message: 'Technician created successfully',
+      technician: data
+    });
+
+  } catch (err) {
+    console.error('createTechnician controller error:', err);
+
+    // Firebase validation errors
+    if (err.code === 'auth/email-already-exists') {
+      return res.status(409).json({
+        error: 'A Firebase account with this email already exists'
+      });
+    }
+
+    if (err.code === 'auth/invalid-email') {
+      return res.status(400).json({
+        error: 'Invalid email address'
+      });
+    }
+
+    if (err.code === 'auth/weak-password') {
+      return res.status(400).json({
+        error: 'Password is too weak'
+      });
+    }
+
+    return res.status(500).json({
+      error: 'Internal server error while creating technician'
+    });
+  }
+};
 const getCustomerActivityDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -235,5 +363,7 @@ module.exports = {
   getUserProfile,
   checkAdminStatus,
   getAllCustomers,
-  getCustomerActivityDetails
+  getCustomerActivityDetails,
+    getAllTechnicians,
+  createTechnician
 };

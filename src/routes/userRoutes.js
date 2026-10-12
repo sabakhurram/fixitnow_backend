@@ -8,7 +8,9 @@ const {
   getUserProfile,
   checkAdminStatus,
   getAllCustomers,
-  getCustomerActivityDetails
+  getCustomerActivityDetails,
+    getAllTechnicians,
+  createTechnician
 } = require('../controllers/userController');
 
 
@@ -29,6 +31,10 @@ router.get('/admin-check', checkAdminStatus);
 
 router.get('/customers', verifyAdmin, getAllCustomers);
 router.get('/customers/:id/details', verifyAdmin, getCustomerActivityDetails);
+// GET /api/users/technicians
+router.get('/technicians', verifyAdmin, getAllTechnicians);
 
+// POST /api/users/technicians
+router.post('/technicians', verifyAdmin, createTechnician);
 
 module.exports = router;
