@@ -40,6 +40,12 @@ const cartRoutes = require("./src/routes/cartRoutes");
 app.use("/api/cart", cartRoutes);
 const reviewRoutes = require("./src/routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);
+const technicianRoutes = require("./src/routes/technicianRoutes");
+app.use("/api/technician", technicianRoutes);
+const serviceRoutes = require("./src/routes/serviceRoutes");
+app.use("/api/services", serviceRoutes);
+const notificationRoutes = require("./src/routes/notificationRoutes");
+app.use("/api/notifications", notificationRoutes);
 
 
 // Health check endpoint

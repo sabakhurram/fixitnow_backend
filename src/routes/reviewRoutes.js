@@ -7,12 +7,17 @@ const {
   createReview,
   getAllReviewsAdmin,
   updateReviewAdmin,
-  deleteReviewAdmin
+  deleteReviewAdmin,
+  createTechnicianReview,
+  getAllTechnicianReviewsAdmin
 } = require('../controllers/reviewController');
 
 // Public routes
 router.get('/site', getSiteReviews);
 router.get('/product/:productId', getProductReviews);
+
+// Customer rates assigned technician
+router.post('/technician', verifyFirebaseToken, createTechnicianReview);
 
 // Submission route (optional auth - verifies if token sent)
 router.post('/', (req, res, next) => {
@@ -24,6 +29,7 @@ router.post('/', (req, res, next) => {
 
 // Admin management routes
 router.get('/admin', verifyFirebaseToken, verifyAdmin, getAllReviewsAdmin);
+router.get('/technicians/admin', verifyFirebaseToken, verifyAdmin, getAllTechnicianReviewsAdmin);
 router.put('/admin/:id', verifyFirebaseToken, verifyAdmin, updateReviewAdmin);
 router.delete('/admin/:id', verifyFirebaseToken, verifyAdmin, deleteReviewAdmin);
 

@@ -66,10 +66,11 @@ const requireRole = (...allowedRoles) => {
 
 
 const verifyAdmin = requireRole("admin");
-
+const verifyTechnician = requireRole("technician", "admin");
 
 module.exports = {
   verifyFirebaseToken,
   requireRole,
   verifyAdmin,
+  verifyTechnician,
 };

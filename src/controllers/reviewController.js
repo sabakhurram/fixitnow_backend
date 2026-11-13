@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const { createInternalNotification } = require('./notificationController');
 
 // Get all approved site/service reviews (where product_id IS NULL)
 const getSiteReviews = async (req, res) => {
@@ -142,11 +143,94 @@ const deleteReviewAdmin = async (req, res) => {
   }
 };
 
+// Customer: Submit a review/rating for an assigned technician
+const createTechnicianReview = async (req, res) => {
+  try {
+    const customerId = req.user ? req.user.uid : null;
+    const {
+      technician_id,
+      service_type = 'inspection',
+      service_id,
+      rating,
+      review_text,
+      author_name
+    } = req.body;
+
+    if (!technician_id || !rating) {
+      return res.status(400).json({ success: false, message: "Technician ID and rating are required." });
+    }
+
+    const numericRating = Number(rating);
+    if (numericRating < 1 || numericRating > 5) {
+      return res.status(400).json({ success: false, message: "Rating must be between 1 and 5." });
+    }
+
+    const { data, error } = await supabase
+      .from('technician_reviews')
+      .insert([{
+        customer_id: customerId,
+        technician_id,
+        service_type,
+        service_id,
+        rating: numericRating,
+        review_text: review_text || "",
+        author_name: author_name || req.user?.name || "Customer"
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("createTechnicianReview error:", error);
+      return res.status(500).json({ success: false, message: error.message });
+    }
+
+    // Alert technician of new feedback
+    await createInternalNotification({
+      recipient_id: technician_id,
+      is_global: false,
+      target_role: 'technician',
+      title: `New Customer Review (${numericRating} ★)`,
+      message: `A customer has submitted a ${numericRating}-star review for your ${service_type} service.`,
+      type: 'info',
+      link: '/technician/dashboard'
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Technician review submitted successfully.",
+      review: data
+    });
+  } catch (err) {
+    console.error("createTechnicianReview error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// Admin: View all technician reviews
+const getAllTechnicianReviewsAdmin = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('technician_reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+
+    return res.status(200).json({ success: true, reviews: data || [] });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   getSiteReviews,
   getProductReviews,
   createReview,
   getAllReviewsAdmin,
   updateReviewAdmin,
-  deleteReviewAdmin
+  deleteReviewAdmin,
+  createTechnicianReview,
+  getAllTechnicianReviewsAdmin
 };
